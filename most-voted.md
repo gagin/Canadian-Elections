@@ -10,8 +10,10 @@ library(readr)
 library(dplyr)
 
 #setwd(file.path(normalizePath("~"),"elections"))
+```
 
 
+```r
 ## Get data
 remote <- 
         "http://www.elections.ca/scripts/OVR2011/34/data_donnees/table_tableau12.csv"
@@ -20,17 +22,16 @@ remote <-
 #e <- read_csv(local)
 # Use remote directly to skip mode setting problem
 e <- read_csv(remote)
-```
 
 
-```r
+
 ## Clean data
 
 # Vectorized function to drop everything after first slash - normally French
 # location names - and replace spaces with dots
 
-Englishize <- function(s, replace.spaces = FALSE) {
-        sapply(s, 
+vEnglishize <- function(strings.vector, replace.spaces = FALSE) {
+        sapply(strings.vector, 
                function(s) {
                         x <- strsplit(s, "/", fixed=TRUE) %>% unlist
                         x <- trimws(x[1])
@@ -40,10 +41,10 @@ Englishize <- function(s, replace.spaces = FALSE) {
         )
 }
 
-colnames(e) %>% Englishize(replace.spaces=TRUE) -> colnames(e)
-e$Province %>% Englishize -> e$Province
-e$Candidate %>% Englishize -> e$Candidate
-e$Candidate.Residence %>% Englishize -> e$Candidate.Residence
+colnames(e) %>% vEnglishize(replace.spaces=TRUE) -> colnames(e)
+e$Province %>% vEnglishize -> e$Province
+e$Candidate %>% vEnglishize -> e$Candidate
+e$Candidate.Residence %>% vEnglishize -> e$Candidate.Residence
 
 numerize <- function(x) {
         x %>% trimws %>% as.numeric
@@ -102,7 +103,7 @@ e[e$Province=="British Columbia", ] %>%
 ```r
 stdev <- sd(e$Percentage.of.Votes.Obtained)
 aver  <- mean(e$Percentage.of.Votes.Obtained)
-cat(paste("68% of candidates get",
+cat(paste("If the distribution would be normal, 68% of winning candidates would get",
           round(aver - stdev),
           "to",
           round(aver + stdev),
@@ -110,7 +111,7 @@ cat(paste("68% of candidates get",
 ```
 
 ```
-## 68% of candidates get 0 to 38 percents of votes
+## If the distribution would be normal, 68% of winning candidates would get 0 to 38 percents of votes
 ```
 
 ```r
@@ -140,7 +141,7 @@ hist(winners,
 ```r
 stdev <- sd(winners)
 aver <- mean(winners)
-cat(paste("68% of winning candidates get",
+cat(paste("If the distribution would be normal, 68% of winning candidates would get",
           round(aver - stdev),
           "to",
           round(aver + stdev),
@@ -148,27 +149,39 @@ cat(paste("68% of winning candidates get",
 ```
 
 ```
-## 68% of winning candidates get 40 to 61 percents of votes
+## If the distribution would be normal, 68% of winning candidates would get 40 to 61 percents of votes
 ```
 
 Let's check Benford's law
 
 ```r
-FirstDigit <- function(x) {
-        x %>% as.character %>% substr(1,1) %>% as.integer
+vFirstDigit <- function(numbers.vector) {
+        sapply(numbers.vector, function(x) {
+                if (x != 0) {
+                        while (x < 1) x <- x*10
+                        x %>% as.character %>% substr(1,1) %>% as.integer -> x
+                        }
+                return(x)
+                })
 }
 
-hist(FirstDigit(e$Percentage.of.Votes.Obtained),
+hist(vFirstDigit(e$Percentage.of.Votes.Obtained),
      main="Benford's law tested for percentages of votes for all candidates",
-     xlab="First digits of vote percentages")
+     xlab="First digits of vote percentages",
+     breaks=1:9,
+     xaxt="n")
+axis(1,at=1:9,hadj=-4)
 ```
 
 ![](most-voted_files/figure-html/unnamed-chunk-3-1.png) 
 
 ```r
-hist(FirstDigit(winners),
+hist(vFirstDigit(winners),
      main="Benford's law tested for percentages of votes for winning candidates",
-     xlab="First digits of vote percentages")
+     xlab="First digits of vote percentages",
+     breaks=1:9,
+     xaxt="n")
+axis(1,at=1:9,hadj=-4)
 ```
 
 ![](most-voted_files/figure-html/unnamed-chunk-3-2.png) 
