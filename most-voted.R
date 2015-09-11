@@ -8,9 +8,9 @@ setwd(file.path(normalizePath("~"),"elections"))
 ## Get data
 remote <- 
         "http://www.elections.ca/scripts/OVR2011/34/data_donnees/table_tableau12.csv"
-#local<-basename(remote)
-#if(!file.exists(local)) download.file(remote, local)
-#e <- read_csv(local)
+local<-basename(remote)
+if(!file.exists(local)) download.file(remote, local, mode="wb")
+e <- read_csv(local)
 e <- read_csv(remote)
 
 ## Clean data
@@ -63,6 +63,25 @@ cat(paste("68% of candidates get",
           round(aver + stdev),
           "percents of votes"))
 hist(e$Percentage.of.Votes.Obtained,
-     main = "It's hard to get 50% of votes",
+     main = "Is it hard to get 50% of votes?",
      xlab = "Percentage of votes",
      ylab = "Number of candidates")
+
+# Let's see what distribution is for winners
+
+winners <- tapply(e$Percentage.of.Votes.Obtained,
+                  e$Electoral.District.Number,
+                  max)
+
+hist(winners,
+     main = "Lead of winners",
+     xlab = "Percentage of votes",
+     ylab = "Number of candidates")
+
+stdev <- sd(winners)
+aver <- mean(winners)
+cat(paste("68% of winning candidates get",
+          round(aver - stdev),
+          "to",
+          round(aver + stdev),
+          "percents of votes"))
