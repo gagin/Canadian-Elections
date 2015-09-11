@@ -157,7 +157,7 @@ Let's check Benford's law
 ```r
 vFirstDigit <- function(numbers.vector) {
         sapply(numbers.vector, function(x) {
-                if (x != 0) {
+                if (x > 0) {
                         while (x < 1) x <- x*10
                         x %>% as.character %>% substr(1,1) %>% as.integer -> x
                         }
@@ -185,3 +185,21 @@ axis(1,at=1:9,hadj=-4)
 ```
 
 ![](most-voted_files/figure-html/unnamed-chunk-3-2.png) 
+
+Actually, aren't these essentially the same as previous histograms,
+although rounded? The difference is in candidates who got less than 1% of votes.
+How many of these were there?
+
+```r
+(sum(e$Percentage.of.Votes.Obtained<1) / nrow(e)) %>% signif(2)
+```
+
+```
+## [1] 0.16
+```
+More than I expected, actually, - one in six.
+
+Anyway, what this tells us, is that votes distribution isn't normal, but rather
+is governed by something close to Benford's law. It makes sense, because it's
+non-linearly harder process to get more votes. Exponential diffuculty instead
+of exponential growth.
