@@ -8,9 +8,10 @@ setwd(file.path(normalizePath("~"),"elections"))
 ## Get data
 remote <- 
         "http://www.elections.ca/scripts/OVR2011/34/data_donnees/table_tableau12.csv"
-local<-basename(remote)
-if(!file.exists(local)) download.file(remote, local)
-e <- read_csv(local)
+#local<-basename(remote)
+#if(!file.exists(local)) download.file(remote, local)
+#e <- read_csv(local)
+e <- read_csv(remote)
 
 ## Clean data
 
@@ -49,7 +50,19 @@ e %>%
 
 ## What about BC?
 
-e[e$Province=="British Columbia",] %>%
+e[e$Province=="British Columbia", ] %>%
         arrange(desc(Percentage.of.Votes.Obtained)) %>%
         head(10) %>%
         glimpse
+
+stdev <- sd(e$Percentage.of.Votes.Obtained)
+aver  <- mean(e$Percentage.of.Votes.Obtained)
+cat(paste("68% of candidates get",
+          round(aver - stdev),
+          "to",
+          round(aver + stdev),
+          "percents of votes"))
+hist(e$Percentage.of.Votes.Obtained,
+     main = "It's hard to get 50% of votes",
+     xlab = "Percentage of votes",
+     ylab = "Number of candidates")
