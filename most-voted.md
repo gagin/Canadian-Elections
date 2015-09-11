@@ -1,6 +1,6 @@
-# Untitled
+# Election results from Canadian Federal elections in 2011
 
-Let's have results in place
+How signigicant was conservative lead?
 
 
 ```r
@@ -8,32 +8,22 @@ Let's have results in place
 
 library(readr)
 library(dplyr)
-```
 
-```
-## 
-## Attaching package: 'dplyr'
-## 
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
+#setwd(file.path(normalizePath("~"),"elections"))
 
-```r
-setwd(file.path(normalizePath("~"),"elections"))
 
 ## Get data
 remote <- 
         "http://www.elections.ca/scripts/OVR2011/34/data_donnees/table_tableau12.csv"
-local<-basename(remote)
-if(!file.exists(local)) download.file(remote, local, mode="wb")
-e <- read_csv(local)
+#local<-basename(remote)
+#if(!file.exists(local)) download.file(remote, local, mode="wb")
+#e <- read_csv(local)
+# Use remote directly to skip mode setting problem
 e <- read_csv(remote)
+```
 
+
+```r
 ## Clean data
 
 # Vectorized function to drop everything after first slash - normally French
@@ -130,7 +120,7 @@ hist(e$Percentage.of.Votes.Obtained,
      ylab = "Number of candidates")
 ```
 
-![](most-voted_files/figure-html/unnamed-chunk-1-1.png) 
+![](most-voted_files/figure-html/unnamed-chunk-2-1.png) 
 
 ```r
 # Let's see what distribution is for winners
@@ -145,7 +135,7 @@ hist(winners,
      ylab = "Number of candidates")
 ```
 
-![](most-voted_files/figure-html/unnamed-chunk-1-2.png) 
+![](most-voted_files/figure-html/unnamed-chunk-2-2.png) 
 
 ```r
 stdev <- sd(winners)
@@ -161,3 +151,24 @@ cat(paste("68% of winning candidates get",
 ## 68% of winning candidates get 40 to 61 percents of votes
 ```
 
+Let's check Benford's law
+
+```r
+FirstDigit <- function(x) {
+        x %>% as.character %>% substr(1,1) %>% as.integer
+}
+
+hist(FirstDigit(e$Percentage.of.Votes.Obtained),
+     main="Benford's law tested for percentages of votes for all candidates",
+     xlab="First digits of vote percentages")
+```
+
+![](most-voted_files/figure-html/unnamed-chunk-3-1.png) 
+
+```r
+hist(FirstDigit(winners),
+     main="Benford's law tested for percentages of votes for winning candidates",
+     xlab="First digits of vote percentages")
+```
+
+![](most-voted_files/figure-html/unnamed-chunk-3-2.png) 

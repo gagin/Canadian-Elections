@@ -1,26 +1,32 @@
 ---
-title: "Untitled"
-output: html_document
+title: "Election results from Canadian Federal elections in 2011"
+output: 
+  html_document:
+    keep_md: true
 ---
 
-Let's have results in place
+How signigicant was conservative lead?
 
-```{r}
+```{r, message=FALSE}
 # Analyze election results from Canadian Federal Elections 2011
 
 library(readr)
 library(dplyr)
 
-setwd(file.path(normalizePath("~"),"elections"))
+#setwd(file.path(normalizePath("~"),"elections"))
+
 
 ## Get data
 remote <- 
         "http://www.elections.ca/scripts/OVR2011/34/data_donnees/table_tableau12.csv"
-local<-basename(remote)
-if(!file.exists(local)) download.file(remote, local, mode="wb")
-e <- read_csv(local)
+#local<-basename(remote)
+#if(!file.exists(local)) download.file(remote, local, mode="wb")
+#e <- read_csv(local)
+# Use remote directly to skip mode setting problem
 e <- read_csv(remote)
+```
 
+```{r}
 ## Clean data
 
 # Vectorized function to drop everything after first slash - normally French
@@ -93,6 +99,20 @@ cat(paste("68% of winning candidates get",
           "to",
           round(aver + stdev),
           "percents of votes"))
-
 ```
 
+Let's check Benford's law
+```{r}
+
+FirstDigit <- function(x) {
+        x %>% as.character %>% substr(1,1) %>% as.integer
+}
+
+hist(FirstDigit(e$Percentage.of.Votes.Obtained),
+     main="Benford's law tested for percentages of votes for all candidates",
+     xlab="First digits of vote percentages")
+
+hist(FirstDigit(winners),
+     main="Benford's law tested for percentages of votes for winning candidates",
+     xlab="First digits of vote percentages")
+```
